@@ -14,6 +14,15 @@ const server = new ApolloServer({
   context: authMiddleware,
 });
 
+// // Configure CORS options
+// const corsOptions = {
+//   origin: 'http://localhost:3000', // Allow requests from this origin
+//   credentials: true, // Allow sending cookies and other credentials
+// };
+
+// app.use(cors(corsOptions)); // Use the cors middleware
+
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -29,9 +38,16 @@ const startApolloServer = async (typeDefs, resolvers) => {
   await server.start();
   server.applyMiddleware({ app });
 
-db.once('open', () => {
-  app.listen(PORT, () => console.log(`🌍 Now listening on localhost:${PORT}`));
-})
+  db.once('open', () => {
+    app.listen(PORT, () => {
+      console.log(`API server running on port ${PORT}!`);
+      // log where we can go to test our GQL API
+      console.log(
+        `Use GraphQL at http://localhost:${PORT}${server.graphqlPath}`
+      );
+    });
+  });
 };
+
 
 startApolloServer(typeDefs, resolvers);
