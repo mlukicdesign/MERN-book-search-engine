@@ -24,14 +24,13 @@ const SearchBooks = () => {
   // create state to hold saved bookId values
   const [savedBookIds, setSavedBookIds] = useState(getSavedBookIds());
 
-  // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
-  // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
+
   useEffect(() => {
     return () => saveBookIds(savedBookIds);
   });
 
   // Use Apollo's Mutation Hook
-  const [saveBookMutation, { error }] = useMutation(SAVE_BOOK);
+  const [saveBook , { error }] = useMutation(SAVE_BOOK);
 
   // create method to search for books and set state on form submit
   const handleFormSubmit = async (event) => {
@@ -65,44 +64,33 @@ const SearchBooks = () => {
     }
   };
 
-  // create function to handle saving a book to our database
-  const handleSaveBook = async (bookDetails, token) => {
-    // // find the book in `searchedBooks` state by the matching id
-    // const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
+  // / create function to handle saving a book to our database
+  const handleSaveBook = async (bookId) => {
+    // find the book in `searchedBooks` state by the matching id
+    const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
 
-    // // get token
-    // const token = Auth.loggedIn() ? Auth.getToken() : null;
+    try {
+      saveBook({
+        variables: {
+          bookId: bookToSave.bookId,
+          image: bookToSave.image,
+          title: bookToSave.title,
+          authors: bookToSave.authors,
+          description: bookToSave.description,
+          link: bookToSave.link,
+        }
+      })
 
-    // if (!token) {
-    //   return false;
-    // }
+      if (error) {
+        throw new Error('something went wrong!');
+      }
 
-    // This works
-    // try {
-    //   const response = await saveBook(bookToSave, token);
-
-    // my code
-  try {
-      const { data } = await saveBookMutation({
-        variables: { bookData: bookDetails },
-        context: {
-                    headers: {
-                        authorization: `Bearer ${token}`
-                    }
-                }
-      });
-
-      // if (data && data.saveBook) {
-      //   setSavedBookIds([...savedBookIds, bookToSave.bookId]);
-      // } else {
-      //   throw new Error('Failed to save the book.');
-      // }
-      setSavedBookIds(data.saveBook.id);
+      // if book successfully saves to user's account, save book id to state
+      setSavedBookIds([...savedBookIds, bookToSave.bookId]);
     } catch (err) {
       console.error(err);
     }
   };
-  
 
   return (
     <>
